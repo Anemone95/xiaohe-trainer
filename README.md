@@ -28,3 +28,13 @@ npm run dev
 ```bash
 npm test
 ```
+
+## 发布到 Cloudflare Workers
+
+在环境中配置 `CLOUDFLARE_ACCOUNT_ID` 和 `CLOUDFLARE_API_TOKEN` 后运行：
+
+```bash
+npm run deploy:worker
+```
+
+Worker 的自定义域名已通过 Cloudflare API 绑定到 `xiaohe.wenyuanxu.net`；后续运行该命令只更新 Worker，域名绑定会继续保留。
