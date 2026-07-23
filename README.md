@@ -38,3 +38,5 @@ npm run deploy:worker
 ```
 
 Worker 的自定义域名已通过 Cloudflare API 绑定到 `xiaohe.wenyuanxu.net`；后续运行该命令只更新 Worker，域名绑定会继续保留。
+
+推送到 `main` 分支时，GitHub Actions 会自动运行测试并发布 Worker；也可以在仓库的 Actions 页面手动触发。
