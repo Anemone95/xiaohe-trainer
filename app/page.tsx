@@ -146,23 +146,26 @@ export default function Home() {
   const registerMiss = useCallback((source: "direct" | "slow") => {
     setTotal((value) => value + 1);
     const nextMisses = [...misses, source];
+    const strongestSource = nextMisses.includes("direct") ? "direct" : "slow";
     setMisses(nextMisses);
+
+    const log: MistakeLog = { id: card.id, prompt: card.prompt, key: card.key, time: Date.now(), source: strongestSource };
+    setMistakes((current) => [log, ...current.filter((item) => item.id !== card.id)]);
+    setReviews((current) => ({
+      ...current,
+      [card.id]: { level: 0, due: Date.now(), mistakes: (current[card.id]?.mistakes ?? 0) + 1 },
+    }));
+    const rapidReview = shortReviews.current.find((item) => item.id === card.id);
+    const reviewDelay = strongestSource === "direct" ? 3 : 5;
+    if (rapidReview) rapidReview.remaining = Math.min(rapidReview.remaining, reviewDelay);
+    else shortReviews.current.push({ id: card.id, remaining: reviewDelay });
+
     if (nextMisses.length < 2) {
       setFeedback(source === "direct" ? "wrong" : "slow");
       return;
     }
 
     setFeedback("revealed");
-    const strongestSource = nextMisses.includes("direct") ? "direct" : "slow";
-    const log: MistakeLog = { id: card.id, prompt: card.prompt, key: card.key, time: Date.now(), source: strongestSource };
-    setMistakes((current) => [log, ...current.filter((item) => item.id !== card.id)].slice(0, 12));
-    setReviews((current) => ({
-      ...current,
-      [card.id]: { level: 0, due: Date.now(), mistakes: (current[card.id]?.mistakes ?? 0) + 1 },
-    }));
-    if (!shortReviews.current.some((item) => item.id === card.id)) {
-      shortReviews.current.push({ id: card.id, remaining: strongestSource === "direct" ? 3 : 5 });
-    }
   }, [card, misses]);
 
   const answer = useCallback((key: string) => {
@@ -278,17 +281,17 @@ export default function Home() {
 
       <div className="lower-grid">
         <section className="panel mistake-panel">
-          <div className="panel-title"><h2>近期错题</h2><span>{mistakes.length ? "会自动安排复习" : "还没有错题"}</span></div>
+          <div className="panel-title"><h2>近期错题</h2><span>{mistakes.length ? `${mistakes.length} 个，会自动安排复习` : "还没有错题"}</span></div>
           {mistakes.length ? (
             <div className="mistake-list">
-              {mistakes.slice(0, 6).map((item) => (
+              {mistakes.map((item) => (
                 <div className="mistake-item" key={item.id}>
                   <span>{item.prompt}</span><span className="arrow">→</span><kbd>{item.key.toUpperCase()}</kbd>
                   {item.source === "slow" && <small>慢</small>}
                 </div>
               ))}
             </div>
-          ) : <p className="empty-copy">连续错两次的项目会出现在这里。</p>}
+          ) : <p className="empty-copy">按错或反应超时的项目会出现在这里。</p>}
         </section>
 
         <details className="panel reference-panel">
