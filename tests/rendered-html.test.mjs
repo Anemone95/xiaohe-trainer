@@ -37,6 +37,10 @@ test("contains the complete Xiaohe mappings and review schedule", async () => {
   assert.match(page, /localStorage\.setItem/);
   assert.match(page, /FIRST_ANSWER_TIMEOUT_MS = 5_000/);
   assert.match(page, /SECOND_ANSWER_TIMEOUT_MS = 8_000/);
+  assert.match(page, /event\.code === "Space"/);
+  assert.match(page, /timedMode && feedback !== "revealed"/);
+  assert.match(page, /if \(paused\) return/);
+  assert.match(page, /计时已暂停/);
   assert.match(page, /registerMiss\("slow"\)/);
   assert.match(page, /strongestSource === "direct" \? 3 : 5/);
   assert.match(page, /setMistakes\(\(current\) => \[log, \.\.\.current\.filter/);

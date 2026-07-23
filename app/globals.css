@@ -41,6 +41,8 @@ button, summary { font: inherit; }
 .timer-toggle input:checked + .toggle-track { border-color: var(--green); background: var(--green); }
 .timer-toggle input:checked + .toggle-track i { transform: translateX(15px); }
 .timer-toggle input:focus-visible + .toggle-track { outline: 3px solid rgba(57, 116, 92, .22); outline-offset: 2px; }
+.pause-shortcut { border: 0; border-radius: 999px; padding: 6px 10px; background: #ecece6; color: var(--muted); font-size: 12px; cursor: pointer; }
+.pause-shortcut.active { background: #f4e5c9; color: #8c5e18; font-weight: 700; }
 .stats { display: flex; align-items: center; gap: 22px; color: var(--muted); font-size: 13px; }
 .stats span { display: flex; align-items: baseline; gap: 5px; }
 .stats b { color: var(--ink); font-size: 17px; }
@@ -62,6 +64,7 @@ button, summary { font: inherit; }
 .practice-card::after { content: ""; position: absolute; inset: auto 0 0; height: 5px; background: var(--green); transform: scaleX(0); transition: transform .15s; }
 .practice-card.correct::after { transform: scaleX(1); }
 .practice-card.wrong, .practice-card.revealed { border-color: #e7aaa4; background: #fffaf8; }
+.practice-card.paused { border-color: #d7c392; background: #fffdf7; }
 .kind-pill { position: absolute; top: 22px; left: 24px; padding: 6px 11px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: 12px; font-weight: 700; }
 .instruction { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
 .practice-card h1 { margin: 2px 0 2px; font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: clamp(76px, 12vw, 112px); font-weight: 680; line-height: 1.08; letter-spacing: -.06em; }
@@ -69,6 +72,7 @@ button, summary { font: inherit; }
 .hint { color: #9da39f; }
 .error-text { color: var(--red); font-weight: 650; }
 .slow-text { color: #9a6a20; font-weight: 650; }
+.pause-text { color: #8c5e18; font-weight: 700; }
 .success-text { color: var(--green); font-weight: 700; }
 .reveal { display: flex; align-items: center; gap: 9px; color: var(--red); font-weight: 650; }
 kbd { display: inline-grid; place-items: center; min-width: 29px; height: 29px; padding: 0 7px; border: 1px solid #c9cbc5; border-bottom-width: 3px; border-radius: 7px; background: white; color: var(--ink); font-family: ui-monospace, monospace; font-weight: 800; }

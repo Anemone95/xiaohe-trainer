@@ -85,6 +85,7 @@ export default function Home() {
   const [correct, setCorrect] = useState(0);
   const [total, setTotal] = useState(0);
   const [timedMode, setTimedMode] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(false);
   const shortReviews = useRef<{ id: string; remaining: number }[]>([]);
   const answerTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
@@ -139,6 +140,7 @@ export default function Home() {
   const nextCard = useCallback(() => {
     setCard((current) => chooseNext(current.id));
     setMisses([]);
+    setPaused(false);
     setFeedback("idle");
     setPressedKey("");
   }, [chooseNext]);
@@ -169,6 +171,7 @@ export default function Home() {
   }, [card, misses]);
 
   const answer = useCallback((key: string) => {
+    if (paused) return;
     const normalized = key.toLowerCase();
     if (!/^[a-z]$/.test(normalized)) return;
     clearAnswerTimer();
@@ -191,11 +194,11 @@ export default function Home() {
     }
 
     registerMiss("direct");
-  }, [card, clearAnswerTimer, nextCard, registerMiss, reviews]);
+  }, [card, clearAnswerTimer, nextCard, paused, registerMiss, reviews]);
 
   useEffect(() => {
     clearAnswerTimer();
-    if (!ready || !timedMode || feedback === "revealed" || feedback === "correct") return;
+    if (!ready || !timedMode || paused || feedback === "revealed" || feedback === "correct") return;
     const token = timerToken.current;
     answerTimer.current = window.setTimeout(() => {
       if (timerToken.current !== token) return;
@@ -203,16 +206,28 @@ export default function Home() {
       registerMiss("slow");
     }, misses.length === 0 ? FIRST_ANSWER_TIMEOUT_MS : SECOND_ANSWER_TIMEOUT_MS);
     return clearAnswerTimer;
-  }, [card.id, clearAnswerTimer, feedback, misses.length, ready, registerMiss, timedMode]);
+  }, [card.id, clearAnswerTimer, feedback, misses.length, paused, ready, registerMiss, timedMode]);
+
+  useEffect(() => {
+    if (!timedMode) setPaused(false);
+  }, [timedMode]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (timedMode && feedback !== "revealed" && feedback !== "correct") {
+          setPaused((value) => !value);
+        }
+        return;
+      }
+      if (paused) return;
       answer(event.key);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [answer]);
+  }, [answer, feedback, paused, timedMode]);
 
   const accuracy = total ? Math.round((correct / total) * 100) : 100;
   const dueCount = useMemo(() => Object.values(reviews).filter((item) => item.due <= Date.now()).length, [reviews, card]);
@@ -225,6 +240,7 @@ export default function Home() {
     setCorrect(0);
     setTotal(0);
     setTimedMode(false);
+    setPaused(false);
     shortReviews.current = [];
     setCard(randomFrom(CARDS));
     setMisses([]);
@@ -237,6 +253,11 @@ export default function Home() {
       <header className="topbar">
         <div className="brand"><span className="brand-mark">鹤</span><span>小鹤双拼练习</span></div>
         <div className="topbar-actions">
+          {timedMode && (
+            <button className={`pause-shortcut ${paused ? "active" : ""}`} type="button" onClick={() => setPaused((value) => !value)}>
+              {paused ? "已暂停 · 空格继续" : "空格暂停"}
+            </button>
+          )}
           <label className="timer-toggle">
             <input type="checkbox" checked={timedMode} onChange={(event) => setTimedMode(event.target.checked)} />
             <span className="toggle-track" aria-hidden="true"><i /></span>
@@ -250,16 +271,20 @@ export default function Home() {
         </div>
       </header>
 
-      <section className={`practice-card ${feedback}`} aria-live="polite">
+      <section className={`practice-card ${feedback} ${paused ? "paused" : ""}`} aria-live="polite">
         <div className="kind-pill">{card.kind}</div>
         <p className="instruction">请按对应的小鹤双拼键</p>
         <h1>{card.prompt}</h1>
         <div className="answer-area">
-          {feedback === "idle" && <span className="hint">直接按键作答</span>}
-          {feedback === "wrong" && <span className="error-text">不对，再试一次</span>}
-          {feedback === "slow" && <span className="slow-text">反应稍慢，继续作答</span>}
-          {feedback === "revealed" && <span className="reveal">正确按键是 <kbd>{card.key.toUpperCase()}</kbd></span>}
-          {feedback === "correct" && <span className="success-text">正确</span>}
+          {paused ? <span className="pause-text">计时已暂停</span> : (
+            <>
+              {feedback === "idle" && <span className="hint">直接按键作答</span>}
+              {feedback === "wrong" && <span className="error-text">不对，再试一次</span>}
+              {feedback === "slow" && <span className="slow-text">反应稍慢，继续作答</span>}
+              {feedback === "revealed" && <span className="reveal">正确按键是 <kbd>{card.key.toUpperCase()}</kbd></span>}
+              {feedback === "correct" && <span className="success-text">正确</span>}
+            </>
+          )}
         </div>
         <div className="attempt-dots" aria-label={`已错 ${misses.length} 次`}>
           <i className={misses[0] ? `used ${misses[0]}` : ""} />
