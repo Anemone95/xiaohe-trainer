@@ -56,7 +56,8 @@ const REVIEW_INTERVALS = [0, 60_000, 10 * 60_000, 60 * 60_000, 24 * 60 * 60_000,
   3 * 24 * 60 * 60_000, 7 * 24 * 60 * 60_000, 15 * 24 * 60 * 60_000, 30 * 24 * 60 * 60_000];
 const KEY_ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
 const STORAGE_KEY = "xiaohe-shuangpin-progress-v1";
-const ANSWER_TIMEOUT_MS = 5_000;
+const FIRST_ANSWER_TIMEOUT_MS = 5_000;
+const SECOND_ANSWER_TIMEOUT_MS = 8_000;
 
 function randomFrom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
@@ -197,7 +198,7 @@ export default function Home() {
       if (timerToken.current !== token) return;
       answerTimer.current = null;
       registerMiss("slow");
-    }, ANSWER_TIMEOUT_MS);
+    }, misses.length === 0 ? FIRST_ANSWER_TIMEOUT_MS : SECOND_ANSWER_TIMEOUT_MS);
     return clearAnswerTimer;
   }, [card.id, clearAnswerTimer, feedback, misses.length, ready, registerMiss, timedMode]);
 

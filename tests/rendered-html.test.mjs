@@ -35,7 +35,8 @@ test("contains the complete Xiaohe mappings and review schedule", async () => {
   assert.match(page, /60_000/);
   assert.match(page, /30 \* 24 \* 60 \* 60_000/);
   assert.match(page, /localStorage\.setItem/);
-  assert.match(page, /ANSWER_TIMEOUT_MS/);
+  assert.match(page, /FIRST_ANSWER_TIMEOUT_MS = 5_000/);
+  assert.match(page, /SECOND_ANSWER_TIMEOUT_MS = 8_000/);
   assert.match(page, /registerMiss\("slow"\)/);
   assert.match(page, /strongestSource === "direct" \? 3 : 5/);
 });
